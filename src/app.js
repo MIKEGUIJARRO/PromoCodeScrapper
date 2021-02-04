@@ -1,10 +1,15 @@
 const puppeteer = require('puppeteer');
 const { Queue } = require("datastructures-js")
 
+//Run database instance
+require("./database");
+
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
 
 const queue = new Queue();
+
+
 
 
 (async () => {
