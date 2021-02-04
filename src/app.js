@@ -1,7 +1,10 @@
 const puppeteer = require('puppeteer');
+const { Queue } = require("datastructures-js")
 
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
+
+const queue = new Queue();
 
 
 (async () => {
@@ -41,31 +44,13 @@ const PASSWORD = process.env.PASSWORD;
             for (let i = 0; i < LOAD_BATCH; i++) {
                 productCounter++;
                 //We ensure the visibility of the element
-                const itemElement = await page.waitForSelector(`.promo-item-display:nth-child(${productCounter})`);
-                //Accesing and manipulating the DOM element
-                                
-                const linkElement = await itemElement.$("input.a-button-input");
-                const promoElement = await itemElement.$("div.promo-category");
-                const linkPromoElement = await itemElement.$("a.a-link-normal");
-                const dateElement = await itemElement.$("span.a-size-small");
-
-                const promoText = await page.evaluate(el => el.textContent, promoElement);
-                const linkText = await page.evaluate(el => el.textContent, linkPromoElement);
-                const dateText = await page.evaluate(el => el.textContent, dateElement);
-
-                const item = {
-                    promoText,
-                    linkText,
-                    dateText,
-                }
-                console.log(productCounter, item);
+                const item = await getItemInformation(productCounter, page);
+                queue.enqueue(item);
             }
-
         }
     }
-    await page.waitForTimeout(6000);
 
-    // Scroll one viewport at a time, pausing to let content load
+    moveQueueData(queue);
 
     await page.waitForTimeout(5000);
     await browser.close();
@@ -101,3 +86,32 @@ const clickPromoCodeNav = async (page) => {
         console.log(e);
     }
 };
+
+
+
+const getItemInformation = async (i, page) => {
+    const itemElement = await page.waitForSelector(`.promo-item-display:nth-child(${i})`);
+    //Accesing and manipulating the DOM element
+
+    const promoElement = await itemElement.$("div.promo-category");
+    const linkPromoElement = await itemElement.$("a.a-link-normal");
+    const dateElement = await itemElement.$("span.a-size-small");
+
+    const promoText = await page.evaluate(el => el.textContent, promoElement);
+    const linkText = await page.evaluate(el => el.textContent, linkPromoElement);
+    const dateText = await page.evaluate(el => el.textContent, dateElement);
+
+    return {
+        promoText,
+        linkText,
+        dateText,
+    };
+};
+
+const moveQueueData = (queue) => {
+    while (queue.size() > 0) {
+        console.log(queue.front());
+        queue.dequeue();
+    }
+    console.log(queue.size());
+}

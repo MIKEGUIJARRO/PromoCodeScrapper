@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "datastructures-js": "^9.0.0",
     "dotenv": "^8.2.0",
+    "mongoose": "^5.11.15",
     "puppeteer": "^5.5.0"
   }
 }
